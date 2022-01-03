@@ -1,4 +1,8 @@
 # Seu código aqui
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
 produtos = [
     {"id": 1, "name": "sabonete", "price": 5.99},
     {"id": 2, "name": "perfume", "price": 39.90},
@@ -29,5 +33,48 @@ produtos = [
     {"id": 27, "name": "furadeira", "price": 99.15},
     {"id": 28, "name": "ferro de passar", "price": 55.80},
     {"id": 29, "name": "coberta", "price": 55.99},
-    {"id": 30, "name": "sofa", "price": 600.15}
+    {"id": 30, "name": "sofa", "price": 600.15},
 ]
+
+
+@app.get('/products')
+def list_products():
+    return jsonify(produtos), 200
+
+@app.get('/products/<product_id>')
+def get(product_id: int):
+    product_id = int(product_id) - 1
+    return jsonify(produtos[product_id]), 200
+
+@app.post('/products')
+def create():
+    data = request.get_json()
+    novo_id = len(produtos) + 1
+    novo_nome = data.get('name')
+    novo_preco = data.get('price')
+    novo_produto = {'id': novo_id, 'name': novo_nome, 'price': novo_preco}
+    produtos.append(novo_produto)
+
+    return jsonify(novo_produto), 201
+
+@app.patch('/products/<product_id>')
+def update(product_id: int):
+    product_id = int(product_id) - 1
+    data = request.get_json()
+    novo_nome = data.get('name')
+    novo_preco = data.get('price')
+    if novo_nome != None and novo_preco != None:
+        produtos[product_id].update({'name': novo_nome, 'price': novo_preco})
+    elif novo_nome != None:
+        produtos[product_id].update({'name': novo_nome})
+    elif novo_preco != None:
+        produtos[product_id].update({'price': novo_preco})
+
+    return '', 204
+
+@app.delete('/products/<product_id>')
+def delete(product_id: int):
+    product_id = int(product_id) - 1
+    del produtos[product_id]
+
+    return '', 204
